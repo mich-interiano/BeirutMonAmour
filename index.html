@@ -313,7 +313,10 @@ footer{border-top:1px solid var(--border);background:var(--cream);padding:1.5rem
   <div class="admin-panel" id="adminPanel">
     <div class="admin-header">
       <span class="admin-header-title">Dashboard — Beirut Mon Amour</span>
-      <button class="admin-close" onclick="closeAdmin()">×</button>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button style="background:none;border:1px solid rgba(255,255,255,.3);color:var(--warm-white);font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 12px;cursor:pointer" onclick="closeAdmin();document.getElementById('managePanel').classList.add('open');renderItemsManager()">Manage items</button>
+        <button class="admin-close" onclick="closeAdmin()">×</button>
+      </div>
     </div>
     <div class="admin-body" id="adminBody"></div>
   </div>
@@ -613,8 +616,36 @@ function removeFromCart(id){cart=cart.filter(c=>c.id!==id);updateCartCount();ren
 
 // ── MANAGE PANEL ─────────────────────────────────────────────────────────────
 function toggleManage(){
+  if(!adminAuthed){
+    openManageLogin();
+    return;
+  }
   document.getElementById('managePanel').classList.toggle('open');
   renderItemsManager();
+}
+
+function openManageLogin(){
+  document.getElementById('adminOverlay').classList.add('open');
+  document.getElementById('adminBody').innerHTML=`
+    <div class="login-box">
+      <h2>Seller login</h2>
+      <p style="font-size:13px;color:var(--ink-muted);margin-bottom:1rem">Enter your password to manage items.</p>
+      <input type="password" id="adminPw" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPassManage()">
+      <button class="login-btn" onclick="checkPassManage()">Enter</button>
+      <div id="loginErr" class="login-error"></div>
+    </div>`;
+}
+
+function checkPassManage(){
+  const pw=document.getElementById('adminPw').value;
+  if(pw===CONFIG.adminPass){
+    adminAuthed=true;
+    closeAdmin();
+    document.getElementById('managePanel').classList.add('open');
+    renderItemsManager();
+  } else {
+    document.getElementById('loginErr').textContent='Incorrect password.';
+  }
 }
 
 function parsePhotos(raw){
@@ -687,8 +718,12 @@ function renderLogin(){
 
 function checkPass(){
   const pw=document.getElementById('adminPw').value;
-  if(pw===CONFIG.adminPass){adminAuthed=true;renderAdmin();}
-  else{document.getElementById('loginErr').textContent='Incorrect password.';}
+  if(pw===CONFIG.adminPass){
+    adminAuthed=true;
+    renderAdmin();
+  } else {
+    document.getElementById('loginErr').textContent='Incorrect password.';
+  }
 }
 
 function renderAdmin(){
